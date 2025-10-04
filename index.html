@@ -520,6 +520,7 @@
         <div id="controls">
             <button class="control-btn" id="captureBtn" title="Capturar Foto">📸</button>
             <button class="control-btn" id="pauseBtn" title="Pausar">⏸️</button>
+            <button class="control-btn" id="switchBtn" title="Trocar Câmera">🔄</button>
             <button class="control-btn" id="soundBtn" title="Ativar Som">🔇</button>
             <button class="control-btn" id="historyBtn" title="Histórico">📊</button>
         </div>
@@ -585,11 +586,10 @@
         };
 
         let model, video, canvas, ctx;
-        let isDetecting = false, isPaused = false;
+        let isDetecting = false, isPaused = false, useFrontCamera = false;
         let currentLang = 'pt', soundEnabled = false, isDarkMode = false;
         let objectHistory = {};
         let lastDetection = null;
-        let lastSpeechTime = 0;
         let userCorrections = {};
 
         const startBtn = document.getElementById('startBtn');
@@ -614,23 +614,11 @@
 
         function speakText(text) {
             if (!soundEnabled) return;
-            
-            // Cancela qualquer fala anterior
-            speechSynthesis.cancel();
-            
             const utterance = new SpeechSynthesisUtterance(text);
             const langCodes = { pt: 'pt-BR', en: 'en-US', es: 'es-ES', fr: 'fr-FR' };
             utterance.lang = langCodes[currentLang];
             utterance.rate = 0.9;
-            utterance.volume = 1.0;
-            utterance.pitch = 1.0;
-            
-            // Tenta falar
-            try {
-                speechSynthesis.speak(utterance);
-            } catch (error) {
-                console.log('Erro ao falar:', error);
-            }
+            speechSynthesis.speak(utterance);
         }
 
         function addToHistory(label, translation) {
@@ -666,7 +654,7 @@
 
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: {
-                    facingMode: 'environment', // Sempre câmera traseira
+                    facingMode: useFrontCamera ? 'user' : 'environment',
                     width: { ideal: 1280 },
                     height: { ideal: 720 }
                 }
@@ -720,16 +708,8 @@
                 ctx.fillStyle = '#000';
                 ctx.fillText(text, x + 10, y - 8);
 
-                // Fala o objeto detectado (com delay para não repetir muito)
-                const now = Date.now();
-                if (soundEnabled && (!lastDetection || lastDetection !== label || now - lastSpeechTime > 3000)) {
-                    speakText(translation);
-                    lastDetection = label;
-                    lastSpeechTime = now;
-                }
-                
-                // Adiciona ao histórico
                 if (!lastDetection || lastDetection !== label) {
+                    speakText(translation);
                     addToHistory(label, translation);
                     lastDetection = label;
                 }
@@ -740,11 +720,7 @@
 
         function capturePhoto() {
             isPaused = true;
-            const pauseBtn = document.getElementById('pauseBtn');
-            pauseBtn.textContent = '▶️';
-            pauseBtn.title = 'Retomar';
-            
-            updateStatus('📸 Foto capturada!', 'success');
+            document.getElementById('pauseBtn').textContent = '▶️';
             
             const tempCanvas = document.createElement('canvas');
             tempCanvas.width = canvas.width;
@@ -790,17 +766,7 @@
 
         document.getElementById('pauseBtn').addEventListener('click', () => {
             isPaused = !isPaused;
-            const btn = document.getElementById('pauseBtn');
-            btn.textContent = isPaused ? '▶️' : '⏸️';
-            btn.title = isPaused ? 'Retomar' : 'Pausar';
-            
-            // Feedback visual
-            if (isPaused) {
-                updateStatus('⏸️ Detecção pausada', 'warning');
-                statusDiv.style.display = 'flex';
-            } else {
-                statusDiv.style.display = 'none';
-            }
+            document.getElementById('pauseBtn').textContent = isPaused ? '▶️' : '⏸️';
         });
 
         document.getElementById('switchBtn').addEventListener('click', async () => {
@@ -816,16 +782,6 @@
             const btn = document.getElementById('soundBtn');
             btn.textContent = soundEnabled ? '🔊' : '🔇';
             btn.classList.toggle('active');
-            btn.title = soundEnabled ? 'Som Ativado' : 'Som Desativado';
-            
-            // Feedback
-            updateStatus(soundEnabled ? '🔊 Som ativado!' : '🔇 Som desativado', 'success');
-            setTimeout(() => statusDiv.style.display = 'none', 1500);
-            
-            // Teste de voz ao ativar
-            if (soundEnabled) {
-                speakText('Som ativado');
-            }
         });
 
         document.getElementById('historyBtn').addEventListener('click', () => {
@@ -864,9 +820,7 @@
         document.getElementById('correctBtn').addEventListener('click', () => {
             modal.style.display = 'none';
             isPaused = false;
-            const pauseBtn = document.getElementById('pauseBtn');
-            pauseBtn.textContent = '⏸️';
-            pauseBtn.title = 'Pausar';
+            document.getElementById('pauseBtn').textContent = '⏸️';
             updateStatus('✅ Obrigado pelo feedback!', 'success');
             setTimeout(() => statusDiv.style.display = 'none', 2000);
         });
@@ -885,9 +839,7 @@
                     input.style.display = 'none';
                     input.value = '';
                     isPaused = false;
-                    const pauseBtn = document.getElementById('pauseBtn');
-                    pauseBtn.textContent = '⏸️';
-                    pauseBtn.title = 'Pausar';
+                    document.getElementById('pauseBtn').textContent = '⏸️';
                     setTimeout(() => statusDiv.style.display = 'none', 2000);
                 }
             };
@@ -902,9 +854,7 @@
             document.getElementById('correctionInput').style.display = 'none';
             document.getElementById('correctionInput').value = '';
             isPaused = false;
-            const pauseBtn = document.getElementById('pauseBtn');
-            pauseBtn.textContent = '⏸️';
-            pauseBtn.title = 'Pausar';
+            document.getElementById('pauseBtn').textContent = '⏸️';
         });
 
         document.querySelector('.clear-history').addEventListener('click', () => {
@@ -921,11 +871,8 @@
             if (e.target === modal) {
                 modal.style.display = 'none';
                 document.getElementById('correctionInput').style.display = 'none';
-                document.getElementById('correctionInput').value = '';
                 isPaused = false;
-                const pauseBtn = document.getElementById('pauseBtn');
-                pauseBtn.textContent = '⏸️';
-                pauseBtn.title = 'Pausar';
+                document.getElementById('pauseBtn').textContent = '⏸️';
             }
         });
 
