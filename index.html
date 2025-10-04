@@ -182,20 +182,20 @@
             left: 50%;
             transform: translateX(-50%);
             display: none;
-            gap: 15px;
+            gap: 12px;
             z-index: 100;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
             justify-content: center;
-            max-width: 90%;
+            max-width: 95%;
         }
 
         .control-btn {
             background: rgba(255, 255, 255, 0.95);
             border: none;
-            width: 60px;
-            height: 60px;
+            width: 55px;
+            height: 55px;
             border-radius: 50%;
-            font-size: 28px;
+            font-size: 24px;
             cursor: pointer;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
             transition: all 0.3s ease;
@@ -203,6 +203,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
 
         .control-btn:hover {
@@ -253,7 +254,7 @@
 
         #historyPanel {
             position: absolute;
-            bottom: 110px;
+            bottom: 100px;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(0, 0, 0, 0.9);
@@ -261,11 +262,11 @@
             padding: 20px;
             max-width: 90%;
             width: 400px;
-            max-height: 400px;
+            max-height: 350px;
             overflow-y: auto;
             display: none;
             backdrop-filter: blur(10px);
-            z-index: 100;
+            z-index: 99;
         }
 
         #historyPanel h3 {
@@ -416,8 +417,27 @@
         @media (max-width: 768px) {
             #startScreen h1 { font-size: 36px; }
             #startScreen p { font-size: 16px; }
-            .control-btn { width: 55px; height: 55px; font-size: 24px; }
+            .control-btn { 
+                width: 50px; 
+                height: 50px; 
+                font-size: 22px; 
+            }
             #historyPanel { width: 90%; }
+            #controls {
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .control-btn {
+                width: 48px;
+                height: 48px;
+                font-size: 20px;
+            }
+            #controls {
+                gap: 6px;
+            }
         }
 
         .success { background: rgba(34, 197, 94, 0.95) !important; }
@@ -730,7 +750,9 @@
 
         document.getElementById('historyBtn').addEventListener('click', () => {
             const panel = document.getElementById('historyPanel');
-            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+            const isVisible = panel.style.display === 'block';
+            panel.style.display = isVisible ? 'none' : 'block';
+            document.getElementById('historyBtn').classList.toggle('active', !isVisible);
         });
 
         document.getElementById('darkModeBtn').addEventListener('click', () => {
@@ -741,7 +763,9 @@
 
         document.getElementById('langBtn').addEventListener('click', () => {
             const selector = document.getElementById('languageSelector');
-            selector.style.display = selector.style.display === 'none' ? 'flex' : 'none';
+            const isVisible = selector.style.display === 'flex';
+            selector.style.display = isVisible ? 'none' : 'flex';
+            document.getElementById('langBtn').classList.toggle('active', !isVisible);
         });
 
         document.querySelectorAll('.lang-option').forEach(option => {
@@ -750,6 +774,7 @@
                 option.classList.add('active');
                 currentLang = option.dataset.lang;
                 document.getElementById('languageSelector').style.display = 'none';
+                document.getElementById('langBtn').classList.remove('active');
                 updateStatus(`Idioma: ${option.textContent}`, 'success');
                 setTimeout(() => statusDiv.style.display = 'none', 2000);
             });
