@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#4F46E5">
-    <title>AR Tradutor de Objetos</title>
+    <title>AR Tradutor PRO</title>
     
-    <!-- PWA Meta Tags -->
-    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiQVIgVHJhZHV0b3IgZGUgT2JqZXRvcyIsInNob3J0X25hbWUiOiJBUiBUcmFkdXRvciIsInN0YXJ0X3VybCI6Ii8iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjZmZmZmZmIiwidGhlbWVfY29sb3IiOiIjNEY0NkU1IiwiaWNvbnMiOlt7InNyYyI6ImRhdGE6aW1hZ2Uvc3ZnK3htbCwlM0NzdmcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2aWV3Qm94PScwIDAgMTAwIDEwMCclM0UlM0NyZWN0IGZpbGw9JyUyMzRGNDZFNScgd2lkdGg9JzEwMCcgaGVpZ2h0PScxMDAnLyUzRSUzQ3RleHQgeD0nNTAlMjUnIHk9JzUwJTI1JyBmb250LXNpemU9JzUwJyBmaWxsPSd3aGl0ZScgdGV4dC1hbmNob3I9J21pZGRsZScgZHk9Jy4zZW0nJTNFQVIlM0MvdGV4dCUzRSUzQy9zdmclM0UiLCJzaXplcyI6IjUxMng1MTIiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCJ9XX0=">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%234F46E5' width='100' height='100'/%3E%3Ctext x='50%25' y='50%25' font-size='50' fill='white' text-anchor='middle' dy='.3em'%3EAR%3C/text%3E%3C/svg%3E">
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiQVIgVHJhZHV0b3IgUFJPIiwic2hvcnRfbmFtZSI6IkFSIFRyYWR1dG9yIiwic3RhcnRfdXJsIjoiLyIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiNmZmZmZmYiLCJ0aGVtZV9jb2xvciI6IiM0RjQ2RTUifQ==">
     
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3"></script>
@@ -20,11 +18,23 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --primary: #4F46E5;
+            --success: #22C55E;
+            --error: #EF4444;
+            --warning: #F59E0B;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             overflow: hidden;
             height: 100vh;
+            transition: background 0.3s ease;
+        }
+
+        body.dark-mode {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
         }
 
         #container {
@@ -52,28 +62,65 @@
             pointer-events: none;
         }
 
-        #status {
+        .top-bar {
             position: absolute;
-            top: 20px;
+            top: 15px;
             left: 50%;
             transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+            width: 95%;
+            max-width: 600px;
+            justify-content: space-between;
+        }
+
+        #status {
             background: rgba(0, 0, 0, 0.85);
             color: white;
-            padding: 15px 25px;
+            padding: 12px 20px;
             border-radius: 25px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
-            z-index: 100;
             backdrop-filter: blur(10px);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .top-controls {
+            display: none;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            background: rgba(255, 255, 255, 0.95);
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .icon-btn:active {
+            transform: scale(0.95);
         }
 
         .spinner {
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
             border: 2px solid rgba(255, 255, 255, 0.3);
             border-top-color: white;
             border-radius: 50%;
@@ -124,10 +171,6 @@
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
         }
 
-        #startBtn:active {
-            transform: translateY(0);
-        }
-
         #startBtn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
@@ -141,6 +184,9 @@
             display: none;
             gap: 15px;
             z-index: 100;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 90%;
         }
 
         .control-btn {
@@ -149,188 +195,400 @@
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            font-size: 24px;
+            font-size: 28px;
             cursor: pointer;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
             transition: all 0.3s ease;
             backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .control-btn:hover {
             transform: scale(1.1);
         }
 
-        .control-btn:active {
-            transform: scale(0.95);
+        .control-btn.active {
+            background: var(--success);
+            color: white;
         }
 
-        #info {
+        #languageSelector {
             position: absolute;
-            bottom: 120px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.75);
-            color: white;
-            padding: 15px 25px;
+            top: 80px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.85);
             border-radius: 15px;
-            font-size: 14px;
+            padding: 15px;
             display: none;
-            max-width: 90%;
-            text-align: center;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 101;
             backdrop-filter: blur(10px);
         }
 
+        .lang-option {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .lang-option:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .lang-option.active {
+            border-color: var(--success);
+            background: rgba(34, 197, 94, 0.2);
+        }
+
+        #historyPanel {
+            position: absolute;
+            bottom: 110px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 20px;
+            padding: 20px;
+            max-width: 90%;
+            width: 400px;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+
+        #historyPanel h3 {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .history-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .history-count {
+            background: var(--primary);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        #confirmModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 90%;
+            width: 500px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content img {
+            max-width: 100%;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            max-height: 300px;
+            object-fit: contain;
+        }
+
+        .modal-content h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .modal-content p {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        #correctionInput {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .modal-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn.success {
+            background: var(--success);
+            color: white;
+        }
+
+        .modal-btn.error {
+            background: var(--error);
+            color: white;
+        }
+
+        .modal-btn.warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .modal-btn.secondary {
+            background: #ddd;
+            color: #333;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .clear-history {
+            background: var(--error);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .clear-history:hover {
+            transform: scale(1.05);
+        }
+
         @media (max-width: 768px) {
-            #startScreen h1 {
-                font-size: 36px;
-            }
-
-            #startScreen p {
-                font-size: 16px;
-            }
+            #startScreen h1 { font-size: 36px; }
+            #startScreen p { font-size: 16px; }
+            .control-btn { width: 55px; height: 55px; font-size: 24px; }
+            #historyPanel { width: 90%; }
         }
 
-        .error {
-            background: rgba(239, 68, 68, 0.95) !important;
-        }
-
-        .success {
-            background: rgba(34, 197, 94, 0.95) !important;
-        }
+        .success { background: rgba(34, 197, 94, 0.95) !important; }
+        .error { background: rgba(239, 68, 68, 0.95) !important; }
     </style>
 </head>
 <body>
     <div id="container">
         <div id="startScreen">
-            <h1>📱 AR Tradutor</h1>
-            <p>Aponte a câmera para objetos e veja a tradução em português em tempo real!</p>
-            <button id="startBtn">Iniciar Câmera</button>
+            <h1>🌍 AR Tradutor PRO</h1>
+            <p>Reconhecimento inteligente de objetos com tradução instantânea para múltiplos idiomas!</p>
+            <button id="startBtn">🚀 Iniciar Câmera</button>
         </div>
         
         <video id="webcam" autoplay playsinline></video>
         <canvas id="canvas"></canvas>
         
-        <div id="status">
-            <div class="spinner"></div>
-            <span>Carregando...</span>
+        <div class="top-bar">
+            <div id="status">
+                <div class="spinner"></div>
+                <span>Carregando...</span>
+            </div>
+            <div class="top-controls">
+                <button class="icon-btn" id="darkModeBtn" title="Modo Noturno">🌙</button>
+                <button class="icon-btn" id="langBtn" title="Idiomas">🌐</button>
+            </div>
         </div>
 
-        <div id="info">Aponte para objetos como: livros, garrafas, celulares, pessoas, etc.</div>
+        <div id="languageSelector">
+            <div class="lang-option active" data-lang="pt">🇧🇷 Português</div>
+            <div class="lang-option" data-lang="en">🇺🇸 English</div>
+            <div class="lang-option" data-lang="es">🇪🇸 Español</div>
+            <div class="lang-option" data-lang="fr">🇫🇷 Français</div>
+        </div>
+
+        <div id="historyPanel">
+            <h3>
+                📊 Histórico
+                <button class="clear-history">Limpar</button>
+            </h3>
+            <div id="historyList"></div>
+        </div>
 
         <div id="controls">
+            <button class="control-btn" id="captureBtn" title="Capturar Foto">📸</button>
             <button class="control-btn" id="pauseBtn" title="Pausar">⏸️</button>
             <button class="control-btn" id="switchBtn" title="Trocar Câmera">🔄</button>
+            <button class="control-btn" id="soundBtn" title="Ativar Som">🔇</button>
+            <button class="control-btn" id="historyBtn" title="Histórico">📊</button>
+        </div>
+    </div>
+
+    <div id="confirmModal">
+        <div class="modal-content">
+            <img id="capturedImage" src="" alt="Objeto capturado">
+            <h2>Objeto detectado:</h2>
+            <p id="detectedObject"></p>
+            <input type="text" id="correctionInput" placeholder="Digite a correção...">
+            <div class="modal-buttons">
+                <button class="modal-btn success" id="correctBtn">✅ Correto</button>
+                <button class="modal-btn warning" id="wrongBtn">❌ Errado</button>
+                <button class="modal-btn secondary" id="cancelBtn">Cancelar</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // Dicionário de traduções
         const translations = {
-            'person': 'Pessoa',
-            'bicycle': 'Bicicleta',
-            'car': 'Carro',
-            'motorcycle': 'Moto',
-            'airplane': 'Avião',
-            'bus': 'Ônibus',
-            'train': 'Trem',
-            'truck': 'Caminhão',
-            'boat': 'Barco',
-            'traffic light': 'Semáforo',
-            'fire hydrant': 'Hidrante',
-            'stop sign': 'Placa de Pare',
-            'parking meter': 'Parquímetro',
-            'bench': 'Banco',
-            'bird': 'Pássaro',
-            'cat': 'Gato',
-            'dog': 'Cachorro',
-            'horse': 'Cavalo',
-            'sheep': 'Ovelha',
-            'cow': 'Vaca',
-            'elephant': 'Elefante',
-            'bear': 'Urso',
-            'zebra': 'Zebra',
-            'giraffe': 'Girafa',
-            'backpack': 'Mochila',
-            'umbrella': 'Guarda-chuva',
-            'handbag': 'Bolsa',
-            'tie': 'Gravata',
-            'suitcase': 'Mala',
-            'frisbee': 'Frisbee',
-            'skis': 'Esquis',
-            'snowboard': 'Snowboard',
-            'sports ball': 'Bola',
-            'kite': 'Pipa',
-            'baseball bat': 'Taco de Beisebol',
-            'baseball glove': 'Luva de Beisebol',
-            'skateboard': 'Skate',
-            'surfboard': 'Prancha de Surf',
-            'tennis racket': 'Raquete de Tênis',
-            'bottle': 'Garrafa',
-            'wine glass': 'Taça de Vinho',
-            'cup': 'Xícara',
-            'fork': 'Garfo',
-            'knife': 'Faca',
-            'spoon': 'Colher',
-            'bowl': 'Tigela',
-            'banana': 'Banana',
-            'apple': 'Maçã',
-            'sandwich': 'Sanduíche',
-            'orange': 'Laranja',
-            'broccoli': 'Brócolis',
-            'carrot': 'Cenoura',
-            'hot dog': 'Cachorro-quente',
-            'pizza': 'Pizza',
-            'donut': 'Rosquinha',
-            'cake': 'Bolo',
-            'chair': 'Cadeira',
-            'couch': 'Sofá',
-            'potted plant': 'Planta',
-            'bed': 'Cama',
-            'dining table': 'Mesa de Jantar',
-            'toilet': 'Vaso Sanitário',
-            'tv': 'TV',
-            'laptop': 'Notebook',
-            'mouse': 'Mouse',
-            'remote': 'Controle Remoto',
-            'keyboard': 'Teclado',
-            'cell phone': 'Celular',
-            'microwave': 'Micro-ondas',
-            'oven': 'Forno',
-            'toaster': 'Torradeira',
-            'sink': 'Pia',
-            'refrigerator': 'Geladeira',
-            'book': 'Livro',
-            'clock': 'Relógio',
-            'vase': 'Vaso',
-            'scissors': 'Tesoura',
-            'teddy bear': 'Ursinho de Pelúcia',
-            'hair drier': 'Secador de Cabelo',
-            'toothbrush': 'Escova de Dentes'
+            pt: {
+                'person': 'Pessoa', 'bicycle': 'Bicicleta', 'car': 'Carro', 'motorcycle': 'Moto',
+                'airplane': 'Avião', 'bus': 'Ônibus', 'train': 'Trem', 'truck': 'Caminhão',
+                'boat': 'Barco', 'traffic light': 'Semáforo', 'stop sign': 'Placa de Pare',
+                'bench': 'Banco', 'bird': 'Pássaro', 'cat': 'Gato', 'dog': 'Cachorro',
+                'horse': 'Cavalo', 'backpack': 'Mochila', 'umbrella': 'Guarda-chuva',
+                'handbag': 'Bolsa', 'bottle': 'Garrafa', 'cup': 'Xícara', 'fork': 'Garfo',
+                'knife': 'Faca', 'spoon': 'Colher', 'bowl': 'Tigela', 'banana': 'Banana',
+                'apple': 'Maçã', 'sandwich': 'Sanduíche', 'orange': 'Laranja', 'pizza': 'Pizza',
+                'cake': 'Bolo', 'chair': 'Cadeira', 'couch': 'Sofá', 'bed': 'Cama',
+                'toilet': 'Vaso Sanitário', 'tv': 'TV', 'laptop': 'Notebook', 'mouse': 'Mouse',
+                'keyboard': 'Teclado', 'cell phone': 'Celular', 'book': 'Livro', 'clock': 'Relógio',
+                'vase': 'Vaso', 'scissors': 'Tesoura', 'teddy bear': 'Ursinho', 'toothbrush': 'Escova de Dentes'
+            },
+            en: {
+                'person': 'Person', 'bicycle': 'Bicycle', 'car': 'Car', 'motorcycle': 'Motorcycle',
+                'airplane': 'Airplane', 'bus': 'Bus', 'train': 'Train', 'truck': 'Truck',
+                'boat': 'Boat', 'cat': 'Cat', 'dog': 'Dog', 'horse': 'Horse',
+                'backpack': 'Backpack', 'umbrella': 'Umbrella', 'bottle': 'Bottle',
+                'cup': 'Cup', 'fork': 'Fork', 'knife': 'Knife', 'spoon': 'Spoon',
+                'banana': 'Banana', 'apple': 'Apple', 'pizza': 'Pizza', 'chair': 'Chair',
+                'laptop': 'Laptop', 'cell phone': 'Cell Phone', 'book': 'Book'
+            },
+            es: {
+                'person': 'Persona', 'bicycle': 'Bicicleta', 'car': 'Coche', 'motorcycle': 'Motocicleta',
+                'airplane': 'Avión', 'bus': 'Autobús', 'train': 'Tren', 'truck': 'Camión',
+                'boat': 'Barco', 'cat': 'Gato', 'dog': 'Perro', 'horse': 'Caballo',
+                'backpack': 'Mochila', 'umbrella': 'Paraguas', 'bottle': 'Botella',
+                'cup': 'Taza', 'fork': 'Tenedor', 'knife': 'Cuchillo', 'spoon': 'Cuchara',
+                'banana': 'Plátano', 'apple': 'Manzana', 'pizza': 'Pizza', 'chair': 'Silla',
+                'laptop': 'Portátil', 'cell phone': 'Teléfono Móvil', 'book': 'Libro'
+            },
+            fr: {
+                'person': 'Personne', 'bicycle': 'Vélo', 'car': 'Voiture', 'motorcycle': 'Moto',
+                'airplane': 'Avion', 'bus': 'Bus', 'train': 'Train', 'truck': 'Camion',
+                'boat': 'Bateau', 'cat': 'Chat', 'dog': 'Chien', 'horse': 'Cheval',
+                'backpack': 'Sac à dos', 'umbrella': 'Parapluie', 'bottle': 'Bouteille',
+                'cup': 'Tasse', 'fork': 'Fourchette', 'knife': 'Couteau', 'spoon': 'Cuillère',
+                'banana': 'Banane', 'apple': 'Pomme', 'pizza': 'Pizza', 'chair': 'Chaise',
+                'laptop': 'Ordinateur Portable', 'cell phone': 'Téléphone Portable', 'book': 'Livre'
+            }
         };
 
-        let model;
-        let video;
-        let canvas;
-        let ctx;
-        let isDetecting = false;
-        let isPaused = false;
-        let useFrontCamera = false;
+        let model, video, canvas, ctx;
+        let isDetecting = false, isPaused = false, useFrontCamera = false;
+        let currentLang = 'pt', soundEnabled = false, isDarkMode = false;
+        let objectHistory = {};
+        let lastDetection = null;
+        let userCorrections = {};
 
         const startBtn = document.getElementById('startBtn');
         const startScreen = document.getElementById('startScreen');
         const statusDiv = document.getElementById('status');
         const controls = document.getElementById('controls');
-        const info = document.getElementById('info');
-        const pauseBtn = document.getElementById('pauseBtn');
-        const switchBtn = document.getElementById('switchBtn');
+        const topControls = document.querySelector('.top-controls');
+        const modal = document.getElementById('confirmModal');
 
         function updateStatus(message, type = 'loading') {
             const spinner = statusDiv.querySelector('.spinner');
             const text = statusDiv.querySelector('span');
-            
             text.textContent = message;
             statusDiv.className = type === 'error' ? 'error' : type === 'success' ? 'success' : '';
             spinner.style.display = type === 'loading' ? 'block' : 'none';
+        }
+
+        function translate(label) {
+            if (userCorrections[label]) return userCorrections[label];
+            return translations[currentLang][label] || label;
+        }
+
+        function speakText(text) {
+            if (!soundEnabled) return;
+            const utterance = new SpeechSynthesisUtterance(text);
+            const langCodes = { pt: 'pt-BR', en: 'en-US', es: 'es-ES', fr: 'fr-FR' };
+            utterance.lang = langCodes[currentLang];
+            utterance.rate = 0.9;
+            speechSynthesis.speak(utterance);
+        }
+
+        function addToHistory(label, translation) {
+            const key = `${label}-${translation}`;
+            objectHistory[key] = (objectHistory[key] || 0) + 1;
+            updateHistoryPanel();
+        }
+
+        function updateHistoryPanel() {
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+            
+            const sorted = Object.entries(objectHistory)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+
+            sorted.forEach(([key, count]) => {
+                const [label, translation] = key.split('-');
+                const item = document.createElement('div');
+                item.className = 'history-item';
+                item.innerHTML = `
+                    <span>${translation}</span>
+                    <span class="history-count">${count}x</span>
+                `;
+                historyList.appendChild(item);
+            });
         }
 
         async function setupCamera() {
@@ -338,37 +596,30 @@
             canvas = document.getElementById('canvas');
             ctx = canvas.getContext('2d');
 
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: useFrontCamera ? 'user' : 'environment',
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    }
-                });
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: useFrontCamera ? 'user' : 'environment',
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                }
+            });
 
-                video.srcObject = stream;
-                
-                return new Promise((resolve) => {
-                    video.onloadedmetadata = () => {
-                        canvas.width = video.videoWidth;
-                        canvas.height = video.videoHeight;
-                        resolve(video);
-                    };
-                });
-            } catch (error) {
-                throw new Error('Não foi possível acessar a câmera. Verifique as permissões.');
-            }
+            video.srcObject = stream;
+            
+            return new Promise((resolve) => {
+                video.onloadedmetadata = () => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    resolve(video);
+                };
+            });
         }
 
         async function loadModel() {
-            updateStatus('Carregando modelo de IA...');
+            updateStatus('Carregando IA...');
             model = await cocoSsd.load();
-            updateStatus('Modelo carregado! 🎉', 'success');
-            setTimeout(() => {
-                statusDiv.style.display = 'none';
-                info.style.display = 'block';
-            }, 1500);
+            updateStatus('Pronto! 🎉', 'success');
+            setTimeout(() => statusDiv.style.display = 'none', 1500);
         }
 
         async function detectObjects() {
@@ -386,26 +637,50 @@
                 const [x, y, width, height] = prediction.bbox;
                 const label = prediction.class;
                 const confidence = Math.round(prediction.score * 100);
-                const translation = translations[label] || label;
+                const translation = translate(label);
 
-                // Desenha retângulo
                 ctx.strokeStyle = '#00FF00';
                 ctx.lineWidth = 3;
                 ctx.strokeRect(x, y, width, height);
 
-                // Fundo do texto
                 ctx.fillStyle = 'rgba(0, 255, 0, 0.9)';
                 const text = `${translation} (${confidence}%)`;
                 ctx.font = 'bold 20px Arial';
                 const textWidth = ctx.measureText(text).width;
                 ctx.fillRect(x, y - 30, textWidth + 20, 30);
 
-                // Texto
                 ctx.fillStyle = '#000';
                 ctx.fillText(text, x + 10, y - 8);
+
+                if (!lastDetection || lastDetection !== label) {
+                    speakText(translation);
+                    addToHistory(label, translation);
+                    lastDetection = label;
+                }
             });
 
             requestAnimationFrame(detectObjects);
+        }
+
+        function capturePhoto() {
+            isPaused = true;
+            document.getElementById('pauseBtn').textContent = '▶️';
+            
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(canvas, 0, 0);
+            
+            const imageData = tempCanvas.toDataURL('image/png');
+            document.getElementById('capturedImage').src = imageData;
+            
+            if (lastDetection) {
+                const translation = translate(lastDetection);
+                document.getElementById('detectedObject').textContent = translation;
+            }
+            
+            modal.style.display = 'flex';
         }
 
         startBtn.addEventListener('click', async () => {
@@ -419,6 +694,7 @@
                 startScreen.style.display = 'none';
                 video.style.display = 'block';
                 controls.style.display = 'flex';
+                topControls.style.display = 'flex';
 
                 isDetecting = true;
                 detectObjects();
@@ -427,41 +703,125 @@
                 updateStatus(error.message, 'error');
                 startBtn.disabled = false;
                 startBtn.textContent = 'Tentar Novamente';
-                console.error(error);
             }
         });
 
-        pauseBtn.addEventListener('click', () => {
+        document.getElementById('captureBtn').addEventListener('click', capturePhoto);
+
+        document.getElementById('pauseBtn').addEventListener('click', () => {
             isPaused = !isPaused;
-            pauseBtn.textContent = isPaused ? '▶️' : '⏸️';
-            pauseBtn.title = isPaused ? 'Retomar' : 'Pausar';
-            info.style.display = isPaused ? 'none' : 'block';
+            document.getElementById('pauseBtn').textContent = isPaused ? '▶️' : '⏸️';
         });
 
-        switchBtn.addEventListener('click', async () => {
+        document.getElementById('switchBtn').addEventListener('click', async () => {
             useFrontCamera = !useFrontCamera;
-            
             if (video.srcObject) {
                 video.srcObject.getTracks().forEach(track => track.stop());
             }
+            await setupCamera();
+        });
 
-            try {
-                await setupCamera();
-                updateStatus('Câmera trocada! 📸', 'success');
+        document.getElementById('soundBtn').addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('soundBtn');
+            btn.textContent = soundEnabled ? '🔊' : '🔇';
+            btn.classList.toggle('active');
+        });
+
+        document.getElementById('historyBtn').addEventListener('click', () => {
+            const panel = document.getElementById('historyPanel');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        });
+
+        document.getElementById('darkModeBtn').addEventListener('click', () => {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('dark-mode');
+            document.getElementById('darkModeBtn').textContent = isDarkMode ? '☀️' : '🌙';
+        });
+
+        document.getElementById('langBtn').addEventListener('click', () => {
+            const selector = document.getElementById('languageSelector');
+            selector.style.display = selector.style.display === 'none' ? 'flex' : 'none';
+        });
+
+        document.querySelectorAll('.lang-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.lang-option').forEach(o => o.classList.remove('active'));
+                option.classList.add('active');
+                currentLang = option.dataset.lang;
+                document.getElementById('languageSelector').style.display = 'none';
+                updateStatus(`Idioma: ${option.textContent}`, 'success');
                 setTimeout(() => statusDiv.style.display = 'none', 2000);
-            } catch (error) {
-                updateStatus('Erro ao trocar câmera', 'error');
+            });
+        });
+
+        document.getElementById('correctBtn').addEventListener('click', () => {
+            modal.style.display = 'none';
+            isPaused = false;
+            document.getElementById('pauseBtn').textContent = '⏸️';
+            updateStatus('✅ Obrigado pelo feedback!', 'success');
+            setTimeout(() => statusDiv.style.display = 'none', 2000);
+        });
+
+        document.getElementById('wrongBtn').addEventListener('click', () => {
+            const input = document.getElementById('correctionInput');
+            input.style.display = 'block';
+            input.focus();
+            
+            const submitCorrection = () => {
+                const correction = input.value.trim();
+                if (correction && lastDetection) {
+                    userCorrections[lastDetection] = correction;
+                    updateStatus('✅ Correção salva! Aprendendo...', 'success');
+                    modal.style.display = 'none';
+                    input.style.display = 'none';
+                    input.value = '';
+                    isPaused = false;
+                    document.getElementById('pauseBtn').textContent = '⏸️';
+                    setTimeout(() => statusDiv.style.display = 'none', 2000);
+                }
+            };
+            
+            input.onkeypress = (e) => {
+                if (e.key === 'Enter') submitCorrection();
+            };
+        });
+
+        document.getElementById('cancelBtn').addEventListener('click', () => {
+            modal.style.display = 'none';
+            document.getElementById('correctionInput').style.display = 'none';
+            document.getElementById('correctionInput').value = '';
+            isPaused = false;
+            document.getElementById('pauseBtn').textContent = '⏸️';
+        });
+
+        document.querySelector('.clear-history').addEventListener('click', () => {
+            if (confirm('Limpar todo o histórico?')) {
+                objectHistory = {};
+                updateHistoryPanel();
+                updateStatus('🗑️ Histórico limpo!', 'success');
+                setTimeout(() => statusDiv.style.display = 'none', 2000);
             }
         });
 
-        // PWA - Service Worker
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('data:text/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCdpbnN0YWxsJywgZSA9PiBzZWxmLnNraXBXYWl0aW5nKCkpOw==');
-        }
+        // Fechar modal ao clicar fora
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+                document.getElementById('correctionInput').style.display = 'none';
+                isPaused = false;
+                document.getElementById('pauseBtn').textContent = '⏸️';
+            }
+        });
 
         // Previne zoom em mobile
         document.addEventListener('gesturestart', e => e.preventDefault());
         document.addEventListener('gesturechange', e => e.preventDefault());
+
+        // PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('data:text/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCdpbnN0YWxsJywgZSA9PiBzZWxmLnNraXBXYWl0aW5nKCkpOw==');
+        }
     </script>
 </body>
 </html>
